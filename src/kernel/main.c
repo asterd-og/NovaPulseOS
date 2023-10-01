@@ -17,7 +17,7 @@ static void hcf(void) {
     }
 }
 
-void _start(void) {
+void KeStart(void) {
     if (framebuffer_request.response == NULL
      || framebuffer_request.response->framebuffer_count < 1) {
         hcf();
