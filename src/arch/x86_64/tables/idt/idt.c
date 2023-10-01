@@ -44,22 +44,22 @@ static const char* s_pMsg[32] = {
 void IdtSetDesc(u8 vec, void* pIsr) {
     IDTEntry* pDesc = &s_idtEntries[vec];
 
-    pDesc->low  = (uint64_t)pIsr & 0xFFFF;
+    pDesc->low  = (u64)pIsr & 0xFFFF;
     pDesc->cs   = 0x28;
     pDesc->ist  = 0;
     pDesc->attr = 0x8E;
-    pDesc->mid  = ((uint64_t)pIsr >> 16) & 0xFFFF;
-    pDesc->high = ((uint64_t)pIsr >> 32) & 0xFFFFFFFF;
+    pDesc->mid  = ((u64)pIsr >> 16) & 0xFFFF;
+    pDesc->high = ((u64)pIsr >> 32) & 0xFFFFFFFF;
     pDesc->resv = 0;
 }
 
 void IdtInit() {
     s_idtr = (IDTR){
-        .size   = (uint16_t)sizeof(IDTEntry) * 256 - 1,
+        .size   = (u16)sizeof(IDTEntry) * 256 - 1,
         .offset = (uintptr_t)&s_idtEntries[0]
     };
 
-    for (uint8_t vec = 0; vec < 32; vec++) {
+    for (u8 vec = 0; vec < 32; vec++) {
         IdtSetDesc(vec, g_pIsrTable[vec]);
     }
 
