@@ -44,4 +44,7 @@ typedef struct {
     u64 ss;
 } __attribute__((packed)) Registers;
 
+typedef void(*HandlerFunc)(Registers*);
+
 void IdtInit();
+void IrqRegister(u8 vec, HandlerFunc pHandler);
