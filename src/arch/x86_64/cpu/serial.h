@@ -6,3 +6,4 @@
 
 int SeInit();
 void SeSend(char* pStr);
+void SeFSend(char* pStr, ...);

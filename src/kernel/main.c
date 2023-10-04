@@ -3,11 +3,27 @@
 #include <arch/x86_64/tables/gdt/gdt.h>
 #include <arch/x86_64/tables/idt/idt.h>
 #include <arch/x86_64/cpu/serial.h>
+#include <arch/x86_64/mm/pfa.h>
+#include <kernel/kernel.h>
 
-static volatile struct limine_framebuffer_request framebuffer_request = {
+u64 hhdmOff;
+
+volatile struct limine_framebuffer_request fbReq = {
     .id = LIMINE_FRAMEBUFFER_REQUEST,
     .revision = 0
 };
+
+volatile struct limine_hhdm_request hhdmReq = {
+    .id = LIMINE_HHDM_REQUEST,
+    .revision = 0
+};
+
+volatile struct limine_memmap_request mmapReq = {
+    .id = LIMINE_MEMMAP_REQUEST,
+    .revision = 0
+};
+
+struct limine_memmap_response* pMmapRes;
 
 // Halt and catch fire function.
 static void hcf(void) {
@@ -18,23 +34,29 @@ static void hcf(void) {
 }
 
 void KeStart(void) {
-    if (framebuffer_request.response == NULL
-     || framebuffer_request.response->framebuffer_count < 1) {
+    hhdmOff = hhdmReq.response->offset;
+    pMmapRes = mmapReq.response;
+    
+    if (fbReq.response == NULL
+     || fbReq.response->framebuffer_count < 1) {
         hcf();
     }
 
     GdtInit();
     IdtInit();
     SeInit();
+    PmInit();
 
-    struct limine_framebuffer *framebuffer = framebuffer_request.response->framebuffers[0];
+    struct limine_framebuffer *pFb = fbReq.response->framebuffers[0];
 
     for (size_t i = 0; i < 100; i++) {
-        volatile u32 *fb_ptr = framebuffer->address;
-        fb_ptr[i * (framebuffer->pitch / 4) + i] = 0xffffff;
+        volatile u32 *fb_ptr = pFb->address;
+        fb_ptr[i * (pFb->pitch / 4) + i] = 0xffffff;
     }
 
     asm volatile("int $0x0");
 
     hcf();
 }
+
+void putchar_(char ch) {}

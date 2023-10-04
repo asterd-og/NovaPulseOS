@@ -1,5 +1,7 @@
 #include <arch/x86_64/cpu/serial.h>
 #include <arch/x86_64/io.h>
+#include <libc/string.h>
+#include <libc/printf.h>
 
 int SeInit() {
     outb(COM1 + 1, 0);
@@ -33,4 +35,15 @@ void SeSend(char* pStr) {
     while (*pStr != '\0') {
         SeWriteChar(*pStr++);
     }
+}
+
+void SeWrap(char c, void* extra) {
+    SeWriteChar(c);
+}
+
+void SeFSend(char* pStr, ...) {
+    va_list args;
+    va_start(args, pStr);
+    const int ret = vfctprintf(SeWrap, NULL, pStr, args);
+    va_end(args);
 }
