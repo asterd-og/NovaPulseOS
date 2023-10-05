@@ -46,6 +46,11 @@ void KeStart(void) {
     IdtInit();
     SeInit();
     PmInit();
+    
+    char* strTest = (char*)PmRequest(1) + hhdmOff;
+
+    memcpy(strTest, "Hey!", 5);
+    SeFSend("%s\n", strTest);
 
     struct limine_framebuffer *pFb = fbReq.response->framebuffers[0];
 
