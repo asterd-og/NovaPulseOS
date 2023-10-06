@@ -12,8 +12,7 @@ u64* pPml4;
 
 void VmmInit() {
     pPml4 = (u64*)PmRequest(1);
-    for (int i = 0; i < 4096; i++) pPml4[i] = 0;
-    //memset(pPml4, 0, pageSize);
+    memset(pPml4 + hhdmOff, 0, pageSize);
 
     for (int i = pageSize; i < 4ULL * 1024ULL * 1024ULL * 1024ULL; i += pageSize) {
         // Loop through the first 4 GiB and map those pages
@@ -51,7 +50,7 @@ u64* VmmGetPDPT(u64* pPt, u64 entry) {
         // we mask and return the page directory pointer table
     } else {
         u64 page = (u64)PmRequest(1);
-        memset(page, 0, pageSize);
+        memset(page + hhdmOff, 0, pageSize);
         pPt[entry] = page | flags;
         return (u64*)(pPt[entry] & 0x000FFFFFFFFFF000);
     }
