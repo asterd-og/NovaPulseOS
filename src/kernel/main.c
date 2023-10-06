@@ -5,6 +5,7 @@
 #include <arch/x86_64/cpu/serial.h>
 #include <arch/x86_64/mm/pfa.h>
 #include <kernel/kernel.h>
+#include <arch/x86_64/mm/vmm.h>
 
 u64 hhdmOff;
 
@@ -33,6 +34,10 @@ static void hcf(void) {
     }
 }
 
+u64 bitExtracted(u64 number, int k, int p) {
+    return (((1 << k) - 1) & (number >> (p - 1)));
+}
+
 void KeStart(void) {
     hhdmOff = hhdmReq.response->offset;
     pMmapRes = mmapReq.response;
@@ -46,11 +51,12 @@ void KeStart(void) {
     IdtInit();
     SeInit();
     PmInit();
-    
-    char* strTest = (char*)PmRequest(1) + hhdmOff;
+    VmmInit();
+
+    /*char* strTest = (char*)PmRequest(1) + hhdmOff;
 
     memcpy(strTest, "Hey!", 5);
-    SeFSend("%s\n", strTest);
+    SeFSend("%s\n", strTest);*/
 
     struct limine_framebuffer *pFb = fbReq.response->framebuffers[0];
 
