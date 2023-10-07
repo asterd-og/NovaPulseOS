@@ -8,18 +8,18 @@
 u8* pBitmap;
 size_t bitmapSize;
 
-int lastIdx = 0;
-int freePages = 0;
+size_t lastIdx = 0;
+size_t freePages = 0;
 
-void bitClear(int idx) {
+void bitClear(size_t idx) {
     pBitmap[idx / 8] &= ~(1 << (idx % 8));
 }
 
-void bitSet(int idx) {
+void bitSet(size_t idx) {
     pBitmap[idx / 8] |= (1 << (idx % 8));
 }
 
-int  bitGet(int idx) {
+size_t  bitGet(size_t idx) {
     return pBitmap[idx / 8] & (1 << (idx % 8));
 }
 
@@ -38,7 +38,7 @@ void PmInit() {
     u64 topAddr;
     u64 higherAddr;
     
-    for (int i = 0; i < pMmapRes->entry_count; i++) {
+    for (size_t i = 0; i < pMmapRes->entry_count; i++) {
         SeFSend("Memory @ 0x%lx = Type: %s Length: %lx\n", pMmapRes->entries[i]->base, pMemType[pMmapRes->entries[i]->type], pMmapRes->entries[i]->length);
         if (pMmapRes->entries[i]->type == memUsable || memBLReclaimable) {
             topAddr = pMmapRes->entries[i]->base + pMmapRes->entries[i]->length;
@@ -50,20 +50,23 @@ void PmInit() {
 
     bitmapSize = alignUp((higherAddr / pageSize) / 8, pageSize);
 
-    for (int j = 0; j < pMmapRes->entry_count; j++) {
+    for (size_t j = 0; j < pMmapRes->entry_count; j++) {
         if (pMmapRes->entries[j]->type == memUsable || memBLReclaimable) {
             if (pMmapRes->entries[j]->length >= bitmapSize) {
                 SeFSend("Found bitmap sized entry at 0x%lx\n", pMmapRes->entries[j]->base);
                 pBitmap = pMmapRes->entries[j]->base + hhdmOff;
                 pMmapRes->entries[j]->length -= bitmapSize;
+                pMmapRes->entries[j]->base += bitmapSize;
                 break;
             }
         }
     }
 
-    for (int k = 0; k < pMmapRes->entry_count; k++) {
+    memset(pBitmap, 0xff, bitmapSize);
+
+    for (size_t k = 0; k < pMmapRes->entry_count; k++) {
         if (pMmapRes->entries[k]->type == memUsable || memBLReclaimable) {
-            for (int l = 0; l < pMmapRes->entries[k]->length / pageSize; l++) {
+            for (size_t l = 0; l < pMmapRes->entries[k]->length / pageSize; l++) {
                 freePages++;
                 bitClear((pMmapRes->entries[k]->base + l) / pageSize);
             }
@@ -71,8 +74,8 @@ void PmInit() {
     }
 }
 
-int PmFindFree(u8 num) {
-    for (int i = 0; i < num;) {
+size_t PmFindFree(u8 num) {
+    for (size_t i = 0; i < num;) {
         if (lastIdx > bitmapSize) {
             if (freePages < num) {
                 return -1;
@@ -95,9 +98,9 @@ void* PmRequest(u8 num) {
         return -1;
     }
 
-    int pageIdx = PmFindFree(num);
+    size_t pageIdx = PmFindFree(num);
 
-    for (int i = 0; i < num; i++) {
+    for (size_t i = 0; i < num; i++) {
         bitSet(i + lastIdx);
     }
 
