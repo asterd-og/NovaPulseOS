@@ -51,7 +51,7 @@ void PmInit() {
     bitmapSize = alignUp((higherAddr / pageSize) / 8, pageSize);
 
     for (size_t j = 0; j < pMmapRes->entry_count; j++) {
-        if (pMmapRes->entries[j]->type == memUsable || memBLReclaimable) {
+        if (pMmapRes->entries[j]->type == memUsable) {
             if (pMmapRes->entries[j]->length >= bitmapSize) {
                 SeFSend("Found bitmap sized entry at 0x%lx\n", pMmapRes->entries[j]->base);
                 pBitmap = pMmapRes->entries[j]->base + hhdmOff;
@@ -65,7 +65,7 @@ void PmInit() {
     memset(pBitmap, 0xff, bitmapSize);
 
     for (size_t k = 0; k < pMmapRes->entry_count; k++) {
-        if (pMmapRes->entries[k]->type == memUsable || memBLReclaimable) {
+        if (pMmapRes->entries[k]->type == memUsable) {
             for (size_t l = 0; l < pMmapRes->entries[k]->length / pageSize; l++) {
                 freePages++;
                 bitClear((pMmapRes->entries[k]->base + l) / pageSize);
@@ -76,7 +76,7 @@ void PmInit() {
 
 size_t PmFindFree(u8 num) {
     for (size_t i = 0; i < num;) {
-        if (lastIdx > bitmapSize) {
+        if (lastIdx > (bitmapSize / 8)) {
             if (freePages < num) {
                 return -1;
             }

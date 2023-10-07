@@ -7,23 +7,17 @@
 
 u64* pPml4;
 
-// TODO: FIX PAGE FAULT AT MEMSETS BECAUSE PFA'S RETURNED PAGE
-// SHOULD BE OFFSETTED BY HHDM, BUT OFFSETTING IT CAUSES GPF
-
 void VmmInit() {
     pPml4 = (u64*)PmRequest(1);
-    memset(pPml4 + hhdmOff, 0, pageSize);
-
-    /*char* strTest = (char*)PmRequest(1);
-
-    memset(strTest + hhdmOff, 'a', pageSize);
-    SeFSend("%s\n", strTest);*/
+    memset((char*)pPml4 + hhdmOff, 0, pageSize);
 
     for (int i = pageSize; i < 4ULL * 1024ULL * 1024ULL * 1024ULL; i += pageSize) {
         // Loop through the first 4 GiB and map those pages
-        SeFSend("Mapping page %x\n", i);
+        //SeFSend("Mapped page 0x%x\n", i);
         VmmMapPage(i, i);
     }
+
+    SeFSend("It worked\n");
 
     asm volatile("mov %0, %%cr3": :"a"(pPml4));
 }
