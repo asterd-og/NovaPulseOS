@@ -5,21 +5,33 @@
 
 #define flags 0b11
 
-u64* pPml4;
+static u64* pPml4;
 
 void VmmInit() {
     pPml4 = (u64*)PmRequest(1);
     memset((char*)pPml4 + hhdmOff, 0, pageSize);
 
-    for (int i = pageSize; i < 4ULL * 1024ULL * 1024ULL * 1024ULL; i += pageSize) {
-        // Loop through the first 4 GiB and map those pages
-        //SeFSend("Mapped page 0x%x\n", i);
-        VmmMapPage(i, i);
-    }
+    VmmMapRange(0, 4 * GiB);
+
+    SeFSend("It worked %ld\n", sizeof(pPml4));
+    // Here sizeof(pPml4) should be 8 because 2 * 4 = 8
+    // we do this calculation because we got 4 bits of PML4
+    // as we see in the SDM
+    // (confirmed to be 8)
+
+    asm volatile("mov %0, %%cr3" :: "a" (pPml4 + hhdmOff));
+
+    // Past this line nuffin works
 
     SeFSend("It worked\n");
 
-    asm volatile("mov %0, %%cr3": :"a"(pPml4));
+    return 0;
+}
+
+void VmmMapRange(u64 start, u64 end) {
+    for (int i = alignDown(start, pageSize); i < alignDown(end, pageSize); i += pageSize) {
+        VmmMapPage(i, i);
+    }
 }
 
 u64* VmmGetPage(u64 virtAddr) {
@@ -38,8 +50,8 @@ u64* VmmGetPage(u64 virtAddr) {
 }
 
 void VmmMapPage(u64 virtAddr, u64 physAddr) {
-    *(VmmGetPage(virtAddr)) = physAddr | flags;
-    asm volatile("invlpg (%0)" ::"r" ((u64)pPml4) : "memory");
+    *(VmmGetPage(alignDown(virtAddr, pageSize))) = physAddr | flags;
+    asm volatile("invlpg (%0)" :: "r" ((void*)pPml4));
 }
 
 u64* VmmGetPDPT(u64* pPt, u64 entry) {
@@ -47,10 +59,11 @@ u64* VmmGetPDPT(u64* pPt, u64 entry) {
         // if the page exists
         return (u64*)(pPt[entry] & 0x000FFFFFFFFFF000);
         // we mask and return the page directory pointer table
+        // which is basically the address
     } else {
-        u64 page = (u64)PmRequest(1);
-        memset(page + hhdmOff, 0, pageSize);
-        pPt[entry] = page | flags;
-        return (u64*)(pPt[entry] & 0x000FFFFFFFFFF000);
+        u64* page = (u64*)PmRequest(1);
+        memset((char*)page + hhdmOff, 0, pageSize);
+        pPt[entry] = (((u64)page) & 0x000FFFFFFFFFF000) | flags;
+        return page;
     }
 }

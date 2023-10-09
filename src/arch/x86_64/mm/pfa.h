@@ -4,6 +4,9 @@
 
 #define divRoundUp(x, y) (x + ( y - 1)) / y
 #define alignUp(x, y) divRoundUp(x, y) * y
+#define alignDown(x, y)  ((x) & ~((y)-1))
+
+#define GiB 0x40000000UL
 
 #define pageSize 4096
 
