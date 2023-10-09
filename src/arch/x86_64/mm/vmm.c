@@ -47,7 +47,23 @@ u64* VmmGetPage(u64 virtAddr) {
     return &table[tableIdx];
 }
 
+void VmmSetPage(u64 virtAddr, u64 physAddr) {
+    u64 tableIdx = (virtAddr & ((u64)0b111111111 << 12)) >> 12;
+    u64 de = (virtAddr & ((u64)0b111111111 << 21)) >> 21;
+    u64 dpe = (virtAddr & ((u64)0b111111111 << 30)) >> 30;
+    u64 pml4 = (virtAddr & ((u64)0b111111111 << 39)) >> 39;
+
+    u64* directoryEntry = VmmGetPDPT(pPml4, pml4);
+    u64* directoryPointerEntry = VmmGetPDPT(directoryEntry, dpe);
+    u64* table = VmmGetPDPT(directoryPointerEntry, dpe);
+
+    table[tableIdx] = physAddr | flags;
+
+    asm volatile("invlpg (%0)" :: "r" ((void*)pPml4));
+}
+
 void VmmMapPage(u64 virtAddr, u64 physAddr) {
+    VmmSetPage((alignDown(virtAddr, pageSize)), physAddr);
     *(VmmGetPage(alignDown(virtAddr, pageSize))) = physAddr | flags;
     asm volatile("invlpg (%0)" :: "r" ((void*)pPml4));
 }
