@@ -47,7 +47,7 @@ all: $(ISONAME) run
 	rm -rf iso_root $(OBJ) $(KOUT) $(ISONAME)
 
 run:
-	qemu-system-x86_64 -M q35 -m 2G -smp 1 -s -cdrom $(ISONAME) -boot d -no-reboot -no-shutdown --serial stdio -d int -D ./log.txt
+	qemu-system-x86_64 -M smm=off -m 2G -smp 1 -s -cdrom $(ISONAME) -boot d -no-reboot -no-shutdown --serial stdio -d int -D ./log.txt
 
 run-uefi: ovmf-x64
 	qemu-system-x86_64 -M q35 -m 2G -bios /usr/share/ovmf/OVMF.fd -cdrom $(ISONAME) -boot d --enable-kvm --serial stdio
