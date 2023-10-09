@@ -1,7 +1,7 @@
 [extern IntHandler]
-[global g_pIsrTable]
+[global g_pIntTable]
 
-%macro Pusha 0
+%macro Pusha_ 0
     push rax
     push rbx
     push rcx
@@ -19,7 +19,7 @@
     push r15
 %endmacro
 
-%macro Popa 0
+%macro Popa_ 0
     pop rax
     pop rbx
     pop rcx
@@ -37,18 +37,30 @@
     pop r15
 %endmacro
 
-%macro IsrStub 1
+%macro IsrNoErrStub 1
 IntStub%+%1:
-    %if !(%1 == 8 || (%1 >= 10 && %1 <= 14) || %1 == 17 || %1 == 21 || %1 == 29 || %1 == 30)
-        push 0
-    %endif
+    push 0
     push %1
-    Pusha
+    Pusha_
 
     mov rdi, rsp
     call IntHandler
 
-    Popa
+    Popa_
+
+    add rsp, 16
+    iretq
+%endmacro
+
+%macro IsrErrStub 1
+IntStub%+%1:
+    push %1
+    Pusha_
+
+    mov rdi, rsp
+    call IntHandler
+
+    Popa_
 
     add rsp, 16
     iretq
@@ -58,38 +70,70 @@ IntStub%+%1:
 IntStub%+%1:
     push 0
     push %1
-    Pusha
+    Pusha_
 
     mov rdi, rsp
     call IntHandler
 
-    Popa
+    Popa_
 
     add rsp, 16
     iretq
 %endmacro
 
-%assign x 0
-%rep 32
-    IsrStub x
-    %assign x x+1
-%endrep
+IsrNoErrStub 0
+IsrNoErrStub 1
+IsrNoErrStub 2
+IsrNoErrStub 3
+IsrNoErrStub 4
+IsrNoErrStub 5
+IsrNoErrStub 6
+IsrNoErrStub 7
+IsrErrStub    8
+IsrNoErrStub 9
+IsrErrStub    10
+IsrErrStub    11
+IsrErrStub    12
+IsrErrStub    13
+IsrErrStub    14
+IsrNoErrStub 15
+IsrNoErrStub 16
+IsrErrStub    17
+IsrNoErrStub 18
+IsrNoErrStub 19
+IsrNoErrStub 20
+IsrNoErrStub 21
+IsrNoErrStub 22
+IsrNoErrStub 23
+IsrNoErrStub 24
+IsrNoErrStub 25
+IsrNoErrStub 26
+IsrNoErrStub 27
+IsrNoErrStub 28
+IsrNoErrStub 29
+IsrErrStub    30
+IsrNoErrStub 31
 
-%assign y 32
-%rep 16
-    IrqStub y
-    %assign y y+1
-%endrep
+IrqStub 32
+IrqStub 33
+IrqStub 34
+IrqStub 35
+IrqStub 36
+IrqStub 37
+IrqStub 38
+IrqStub 39
+IrqStub 40
+IrqStub 41
+IrqStub 42
+IrqStub 43
+IrqStub 44
+IrqStub 45
+IrqStub 46
+IrqStub 47
 
-%assign z 48
-%rep 224
-    IsrStub z
-    %assign z z+1
-%endrep
-
-g_pIsrTable:
+g_pIntTable:
     %assign i 0
-    %rep 256
+    %rep 48
         dq IntStub%+i
         %assign i i+1
     %endrep

@@ -9,6 +9,7 @@
 #include <flanterm/flanterm.h>
 #include <flanterm/backends/fb.h>
 #include <utils/log.h>
+#include <drivers/ps2/kb.h>
 
 u64 hhdmOff;
 
@@ -61,6 +62,9 @@ void KeStart(void) {
     IdtInit();
     LogWrite(Good, "IDT Initialised.\n");
 
+    PicRemap();
+    LogWrite(Good, "PIC Remmaped.\n");
+
     SeInit();
     LogWrite(Good, "Serial Initialised.\n");
 
@@ -69,10 +73,20 @@ void KeStart(void) {
 
     VmmInit();
     LogWrite(Good, "VMM Initialised.\n");
-    
-    LogWrite(Good, "Test.\n");
-    LogWrite(Info, "Test.\n");
-    LogWrite(Bad,  "Test.\n");
+
+    KbInit();
+    LogWrite(Good, "Keyboard Initialised.\n");
+
+    char c = '\0';
+
+    while (1) {
+        c = KbGetChar();
+        if (c != '\0') {
+            SeFSend("%c", c);
+        }
+    }
+
+    SeFSend("Sore\n");
 
     hcf();
 }

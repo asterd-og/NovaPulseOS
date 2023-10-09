@@ -5,9 +5,9 @@
 __attribute__((aligned(0x10)))
 static IDTEntry s_idtEntries[256];
 static IDTR     s_idtr;
-extern void*    g_pIsrTable[];
+extern void*    g_pIntTable[];
 
-HandlerFunc     g_handlers[16];
+HandlerFunc     g_handlers[16] = {0};
 
 static const char* s_pMsg[32] = {
     "Division by zero",
@@ -50,28 +50,23 @@ void IdtSetDesc(u8 vec, void* pIsr) {
     pDesc->low  = (u64)pIsr & 0xFFFF;
     pDesc->cs   = 0x28;
     pDesc->ist  = 0;
-    pDesc->attr = 0x8E;
+    pDesc->attr = (u8)0x8E;
     pDesc->mid  = ((u64)pIsr >> 16) & 0xFFFF;
     pDesc->high = ((u64)pIsr >> 32) & 0xFFFFFFFF;
     pDesc->resv = 0;
 }
 
 void IdtInit() {
-    asm volatile("cli");
+    for (u8 vec = 0; vec < 48; vec++) {
+        IdtSetDesc(vec, g_pIntTable[vec]);
+    }
 
     s_idtr = (IDTR){
         .size   = (u16)sizeof(IDTEntry) * 256 - 1,
-        .offset = (uintptr_t)&s_idtEntries[0]
+        .offset = (u64)s_idtEntries
     };
 
-    for (u8 vec = 0; vec < 32; vec++) {
-        IdtSetDesc(vec, g_pIsrTable[vec]);
-    }
-
-    PicRemap();
-
     asm volatile ("lidt %0" :: "m"(s_idtr));
-    asm volatile("sti");
 }
 
 void IrqRegister(u8 vec, HandlerFunc pHandler) {
@@ -88,7 +83,9 @@ void IntHandler(Registers* pRegs) {
 
         for (;;)asm volatile("hlt");
     } else {
-        g_handlers[pRegs->intNo - 32](pRegs);
+        if ((u64)g_handlers[pRegs->intNo - 32] != 0) {
+            g_handlers[pRegs->intNo - 32](pRegs);
+        }
         PicEoi(pRegs->intNo - 32);
     }
 }
