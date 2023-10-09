@@ -8,27 +8,16 @@
 static u64* pPml4;
 
 void VmmInit() {
-    pPml4 = (u64*)PmRequest(1);
-    memset((char*)pPml4 + hhdmOff, 0, pageSize);
+    asm volatile("mov %%cr3, %0" : "=r"(pPml4) :: "memory");
 
-    VmmMapRange(0, 4 * GiB);
-
-    SeFSend("It worked %ld\n", sizeof(pPml4));
-    // Here sizeof(pPml4) should be 8 because 2 * 4 = 8
-    // we do this calculation because we got 4 bits of PML4
-    // as we see in the SDM
-    // (confirmed to be 8)
-
-    asm volatile("mov %0, %%cr3" :: "a" ((u64)pPml4));
-
-    // Past this line nuffin works
+    asm volatile("mov %0, %%cr3" :: "a" ((void*)pPml4));
 
     SeFSend("It worked\n");
 }
 
-void VmmMapRange(u64 start, u64 end) {
-    for (int i = alignDown(start, pageSize); i < alignDown(end, pageSize); i += pageSize) {
-        VmmMapPage(i, i);
+void VmmMapRange(u64 start, u64 end, u64 off) {
+    for (u64 i = alignDown(start, pageSize); i < alignDown(end, pageSize); i += pageSize) {
+        VmmMapPage(i + off, i);
     }
 }
 
