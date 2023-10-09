@@ -6,6 +6,9 @@
 #include <arch/x86_64/mm/pfa.h>
 #include <kernel/kernel.h>
 #include <arch/x86_64/mm/vmm.h>
+#include <flanterm/flanterm.h>
+#include <flanterm/backends/fb.h>
+#include <utils/log.h>
 
 u64 hhdmOff;
 
@@ -24,6 +27,8 @@ volatile struct limine_memmap_request mmapReq = {
     .revision = 0
 };
 
+struct flanterm_context *pFtCtx;
+
 struct limine_memmap_response* pMmapRes;
 
 // Halt and catch fire function.
@@ -32,10 +37,6 @@ static void hcf(void) {
     for (;;) {
         asm ("hlt");
     }
-}
-
-u64 bitExtracted(u64 number, int k, int p) {
-    return (((1 << k) - 1) & (number >> (p - 1)));
 }
 
 void KeStart(void) {
@@ -47,22 +48,44 @@ void KeStart(void) {
         hcf();
     }
 
+    pFtCtx = flanterm_fb_simple_init(
+        fbReq.response->framebuffers[0]->address,
+        fbReq.response->framebuffers[0]->width,
+        fbReq.response->framebuffers[0]->height,
+        fbReq.response->framebuffers[0]->pitch
+    );
+
     GdtInit();
+    LogWrite(Good, "GDT Initialised.\n");
+
     IdtInit();
+    LogWrite(Good, "IDT Initialised.\n");
+
     SeInit();
+    LogWrite(Good, "Serial Initialised.\n");
+
     PmInit();
+    LogWrite(Good, "PMM Initialised.\n");
+
     VmmInit();
-
-    struct limine_framebuffer *pFb = fbReq.response->framebuffers[0];
-
-    for (size_t i = 0; i < 100; i++) {
-        volatile u32 *fb_ptr = pFb->address;
-        fb_ptr[i * (pFb->pitch / 4) + i] = 0xffffff;
-    }
-
-    asm volatile("int $0x0");
+    LogWrite(Good, "VMM Initialised.\n");
+    
+    LogWrite(Good, "Test.\n");
+    LogWrite(Info, "Test.\n");
+    LogWrite(Bad,  "Test.\n");
 
     hcf();
 }
 
-void putchar_(char ch) {}
+void putchar_(char ch) {
+    char str[] = {ch, '\0'};
+    flanterm_write(pFtCtx, str, sizeof(str));
+}
+
+void FtSetFg(uint32_t rgb) {
+    pFtCtx->set_text_fg_rgb(pFtCtx, rgb);
+}
+
+void FtResetFg() {
+    pFtCtx->set_text_fg_default(pFtCtx);
+}

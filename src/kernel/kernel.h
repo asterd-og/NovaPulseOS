@@ -4,6 +4,7 @@
 #include <types.h>
 
 extern u64 hhdmOff;
+extern struct flanterm_context *pFtCtx;
 
 extern volatile struct limine_framebuffer_request fbReq;
 
