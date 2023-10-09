@@ -24,8 +24,6 @@ void VmmInit() {
     // Past this line nuffin works
 
     SeFSend("It worked\n");
-
-    return 0;
 }
 
 void VmmMapRange(u64 start, u64 end) {
@@ -61,9 +59,9 @@ u64* VmmGetPDPT(u64* pPt, u64 entry) {
         // we mask and return the page directory pointer table
         // which is basically the address
     } else {
-        u64* page = (u64*)PmRequest(1);
+        u64 page = (u64)PmRequest(1);
         memset((char*)page + hhdmOff, 0, pageSize);
-        pPt[entry] = (((u64)page) & 0x000FFFFFFFFFF000) | flags;
-        return page;
+        pPt[entry] = page | flags;
+        return (u64*)(page & 0x000FFFFFFFFFF000);
     }
 }
