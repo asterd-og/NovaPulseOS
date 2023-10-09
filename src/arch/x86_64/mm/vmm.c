@@ -19,7 +19,7 @@ void VmmInit() {
     // as we see in the SDM
     // (confirmed to be 8)
 
-    asm volatile("mov %0, %%cr3" :: "a" (pPml4 + hhdmOff));
+    asm volatile("mov %0, %%cr3" :: "a" ((u64)pPml4));
 
     // Past this line nuffin works
 
