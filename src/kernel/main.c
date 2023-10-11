@@ -10,6 +10,7 @@
 #include <flanterm/backends/fb.h>
 #include <utils/log.h>
 #include <drivers/ps2/kb.h>
+#include <utils/term.h>
 
 u64 hhdmOff;
 
@@ -59,11 +60,15 @@ void KeStart(void) {
     GdtInit();
     LogWrite(Good, "GDT Initialised.\n");
 
+    asm volatile("cli");
+
     IdtInit();
     LogWrite(Good, "IDT Initialised.\n");
 
     PicRemap();
     LogWrite(Good, "PIC Remmaped.\n");
+
+    asm volatile("sti");
 
     SeInit();
     LogWrite(Good, "Serial Initialised.\n");
@@ -77,16 +82,11 @@ void KeStart(void) {
     KbInit();
     LogWrite(Good, "Keyboard Initialised.\n");
 
-    char c = '\0';
+    TermInit();
 
     while (1) {
-        c = KbGetChar();
-        if (c != '\0') {
-            SeFSend("%c", c);
-        }
+        TermUpdate();
     }
-
-    SeFSend("Sore\n");
 
     hcf();
 }

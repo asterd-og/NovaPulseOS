@@ -2,20 +2,20 @@
 #include <arch/x86_64/io.h>
 
 void PicRemap() {
-    outb(0x20, 0x11);
-    outb(0xA0, 0x11);
-    outb(0x21, 0x20);
-    outb(0xA1, 0x28);
-    outb(0x21, 0x04);
-    outb(0xA1, 0x02);
-    outb(0x21, 0x01);
-    outb(0xA1, 0x01);
-    outb(0x21, 0x00);
-    outb(0xA1, 0x00);
+    // This will start the init sequence in cascade mode
+    outb(PIC1_CMD, ICW1_INIT | ICW1_ICW4);
+    outb(PIC2_CMD, ICW1_INIT | ICW1_ICW4);
+    outb(PIC1_DAT, 0x20); // Master PIC offset
+    outb(PIC2_DAT, 0x28); // Slave  PIC offset
+    outb(PIC1_DAT, 0x04); // Tell master PIC there's slave PIC at IRQ2
+    outb(PIC2_DAT, 0x02); // Tell slave PIC it's cascade identity
+    outb(PIC1_DAT, ICW4_8086); // Use 8086 PIC
+    outb(PIC2_DAT, ICW4_8086);
+    outb(PIC1_DAT, 0); // Set mask
+    outb(PIC2_DAT, 0);
 }
 
 void PicEoi(u8 no) {
-    SeFSend("EOING %d\n", no);
     if (no > 7) {
         outb(PIC2_CMD, PIC_EOI);
     }

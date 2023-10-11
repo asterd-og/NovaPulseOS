@@ -7,7 +7,7 @@ static IDTEntry s_idtEntries[256];
 static IDTR     s_idtr;
 extern void*    g_pIntTable[];
 
-HandlerFunc     g_handlers[16] = {0};
+void*  g_handlers[16] = {0};
 
 static const char* s_pMsg[32] = {
     "Division by zero",
@@ -45,15 +45,15 @@ static const char* s_pMsg[32] = {
 };
 
 void IdtSetDesc(u8 vec, void* pIsr) {
-    IDTEntry* pDesc = &s_idtEntries[vec];
+  //  IDTEntry* pDesc = &s_idtEntries[vec];
 
-    pDesc->low  = (u64)pIsr & 0xFFFF;
-    pDesc->cs   = 0x28;
-    pDesc->ist  = 0;
-    pDesc->attr = (u8)0x8E;
-    pDesc->mid  = ((u64)pIsr >> 16) & 0xFFFF;
-    pDesc->high = ((u64)pIsr >> 32) & 0xFFFFFFFF;
-    pDesc->resv = 0;
+    s_idtEntries[vec].low  = (u64)pIsr & 0xFFFF;
+    s_idtEntries[vec].cs   = 0x28;
+    s_idtEntries[vec].ist  = 0;
+    s_idtEntries[vec].attr = (u8)0x8E;
+    s_idtEntries[vec].mid  = ((u64)pIsr >> 16) & 0xFFFF;
+    s_idtEntries[vec].high = ((u64)pIsr >> 32) & 0xFFFFFFFF;
+    s_idtEntries[vec].resv = 0;
 }
 
 void IdtInit() {
@@ -66,26 +66,29 @@ void IdtInit() {
         .offset = (u64)s_idtEntries
     };
 
-    asm volatile ("lidt %0" :: "m"(s_idtr));
+    asm ("lidt %0" :: "m"(s_idtr));
 }
 
-void IrqRegister(u8 vec, HandlerFunc pHandler) {
+void IrqRegister(u8 vec, void* pHandler) {
     g_handlers[vec] = pHandler;
 }
 
-void IntHandler(Registers* pRegs) {
-    if (pRegs->intNo < 32) {
-        asm volatile("cli");
+void IsrHandler(Registers* pRegs) {
+    asm volatile("cli");
 
-        SeSend("Uh oh! something went wrong.\n");
-        SeSend(s_pMsg[pRegs->intNo]);
-        SeSend("\n");
+    SeSend("Uh oh! something went wrong.\n");
+    SeSend(s_pMsg[pRegs->intNo]);
+    SeSend("\n");
 
-        for (;;)asm volatile("hlt");
-    } else {
-        if ((u64)g_handlers[pRegs->intNo - 32] != 0) {
-            g_handlers[pRegs->intNo - 32](pRegs);
-        }
-        PicEoi(pRegs->intNo - 32);
+    for (;;)asm volatile("hlt");
+}
+
+void IrqHandler(Registers* pRegs) {
+    void(*HandlerFunc)(Registers*) = g_handlers[pRegs->intNo - 32];
+
+    if ((u64)g_handlers[pRegs->intNo - 32] != 0) {
+        HandlerFunc(pRegs);
     }
+    
+    PicEoi(pRegs->intNo - 32);
 }
