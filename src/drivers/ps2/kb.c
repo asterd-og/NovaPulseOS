@@ -12,10 +12,8 @@ void KbHandler(Registers* regs) {
     u8 key = inb(0x60);
     if (!(key & 0x80)) {
         if (key == 0x2a) {
-            SeFSend("shift pressed\n");
             shift = true;
         } else if (key == 0x3a) {
-            SeFSend("caps pressed\n");
             caps = !caps;
         } else {
             pressed = true;
