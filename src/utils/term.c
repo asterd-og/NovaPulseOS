@@ -1,13 +1,47 @@
 #pragma once
 
 #include <utils/term.h>
+#include <utils/log.h>
 #include <libc/string.h>
 #include <libc/printf.h>
 #include <kernel/kernel.h>
+#include <arch/x86_64/mm/pfa.h>
 
 char buffer[512];
 int bufferIdx = 0;
 char c = '\0';
+
+typedef void(*funcHandlerPtr)(void);
+typedef struct {
+    char const *name;
+    funcHandlerPtr exec;
+    char const *help;
+} CmdStruct;
+
+void CmdFetch(void);
+
+const CmdStruct cmds[] = {
+    {"fetch", &CmdFetch, "Fetch system info"},
+    {"",0,""}
+};
+
+void TermCmdHandler(char* cmd)
+{
+    int i = 0;
+    while(cmds[i].exec > 0)
+    {
+        if(!strcmp(cmds[i].name, cmd))
+        {
+            (*cmds[i].exec)();
+            return;
+        }
+        i++;
+    }
+
+    FtSetFg(lightRed);
+    printf("Couldn't find command '%s'.\n", cmd);
+    FtResetFg();
+}
 
 void TermInput() {
     FtResetFg();
@@ -32,7 +66,8 @@ void TermUpdate() {
     c = KbGetChar();
     if (c != '\0') {
         if (c == '\n') {
-            printf("\n%s\n", buffer);
+            printf("\n");
+            TermCmdHandler(buffer);
             memset(buffer, 0, 512);
             bufferIdx = 0;
             TermInput();
@@ -48,4 +83,11 @@ void TermUpdate() {
             printf("%c", c);
         }
     }
+}
+
+void CmdFetch(void) {
+    printf("\n |\\__/,|   (`\\  NovaPulseOS:\n");
+    printf(" |_ _  |.--.) )  - Free Physical Pages: %ld\n", PmGetFreePages());
+    printf(" ( T   )     /\n");
+    printf("(((^_(((/(((_/\n\n");
 }

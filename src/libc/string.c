@@ -9,6 +9,14 @@ int strlen(const char* pStr) {
     return i;
 }
 
+int strcmp(const char* x, const char* y) {
+    if (strlen(x) != strlen(y)) return 1;
+    for (int i = 0; i < strlen(x); i++) {
+        if (x[i] != y[i]) return 1;
+    }
+    return 0;
+}
+
 void *memcpy(void *dest, const void *src, size_t n) {
     uint8_t *pdest = (uint8_t *)dest;
     const uint8_t *psrc = (const uint8_t *)src;

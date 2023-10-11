@@ -99,10 +99,23 @@ void* PmRequest(u8 num) {
     }
 
     size_t pageIdx = PmFindFree(num);
+    freePages -= num;
 
     for (size_t i = 0; i < num; i++) {
         bitSet(i + lastIdx);
     }
 
     return (void*)(lastIdx * pageSize);
+}
+
+void PmFree(void* ptr, u8 num) {
+    size_t pageIdx = (u64)ptr / pageSize;
+    ptr = 0;
+    for (size_t i = 0; i < num; i++) {
+        bitClear(i + pageIdx);
+    }
+}
+
+size_t PmGetFreePages() {
+    return freePages;
 }
