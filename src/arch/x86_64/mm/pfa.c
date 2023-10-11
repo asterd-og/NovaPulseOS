@@ -40,7 +40,7 @@ void PmInit() {
     
     for (size_t i = 0; i < pMmapRes->entry_count; i++) {
         SeFSend("Memory @ 0x%lx = Type: %s Length: %lx\n", pMmapRes->entries[i]->base, pMemType[pMmapRes->entries[i]->type], pMmapRes->entries[i]->length);
-        if (pMmapRes->entries[i]->type == memUsable || memBLReclaimable) {
+        if (pMmapRes->entries[i]->type == memUsable) {
             topAddr = pMmapRes->entries[i]->base + pMmapRes->entries[i]->length;
             if (topAddr > higherAddr) {
                 higherAddr = topAddr;

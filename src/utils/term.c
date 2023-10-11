@@ -17,6 +17,14 @@ void TermInput() {
 
 void TermInit() {
     printf("\nTerminal Initialised.\n\n");
+
+    printf("   |\\---/|\n");
+    printf("   | ,_, |\n");
+    printf("    \\_`_/-..----.\n");
+    printf(" ___/ `   ' ,""+ \\  sk\n");
+    printf("(__...'   __\\    |`.___.';\n");
+    printf("  (_,...'(_,.`__)/'.....+\n\n");
+
     TermInput();
 }
 
