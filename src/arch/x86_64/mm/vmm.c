@@ -2,22 +2,59 @@
 #include <arch/x86_64/mm/pfa.h>
 #include <libc/string.h>
 #include <kernel/kernel.h>
+#include <limine.h>
 
 #define flags 0b11
-
 static u64* pPml4;
+
+volatile struct limine_kernel_address_request keAddrReq = {
+    .id = LIMINE_KERNEL_ADDRESS_REQUEST,
+    .revision = 0
+};
+
+u64 kePhysAddr;
+u64 keVirtAddr;
 
 void VmmInit() {
     asm volatile("mov %%cr3, %0" : "=r"(pPml4) :: "memory");
+    /*pPml4 = (u64*)PmRequest(1);
+    memset((char*)pPml4 + hhdmOff, 0, pageSize);
+
+    kePhysAddr = keAddrReq.response->physical_base;
+    keVirtAddr = keAddrReq.response->virtual_base;
+    u64 keSize = alignUp(keEnd, pageSize) - keVirtAddr;
+
+    VmmMapRange(0, keSize, keVirtAddr, kePhysAddr);
+    
+    VmmMapRange(pageSize, 0x100000000, 0, 0);
+    VmmMapRange(pageSize, 0x100000000, hhdmOff, 0);
+
+    u64 base;
+    u64 top;
+
+    for (u64 i = 0; i < pMmapRes->entry_count; i++) {
+        base = alignDown(pMmapRes->entries[i]->base, pageSize);
+        top  = alignUp(pMmapRes->entries[i]->base + pMmapRes->entries[i]->length, pageSize);
+        if (top <= 0x100000000) {
+            continue;
+        }
+        for (u64 j = base; j < top; j += pageSize) {
+            if (j < 0x100000000) {
+                continue;
+            }
+            VmmMapPage(j, j);
+            VmmMapPage(j + hhdmOff, j);
+        }
+    }*/
 
     asm volatile("mov %0, %%cr3" :: "a" ((void*)pPml4));
 
     SeFSend("It worked\n");
 }
 
-void VmmMapRange(u64 start, u64 end, u64 off) {
-    for (u64 i = alignDown(start, pageSize); i < alignDown(end, pageSize); i += pageSize) {
-        VmmMapPage(i + off, i);
+void VmmMapRange(u64 start, u64 end, u64 virtOff, u64 physOff) {
+    for (u64 i = alignDown(start, pageSize); i < alignUp(end, pageSize); i += pageSize) {
+        VmmMapPage(i + virtOff, i + physOff);
     }
 }
 

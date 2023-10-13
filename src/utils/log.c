@@ -15,11 +15,6 @@ uint32_t colors[] = {
     lightRed
 };
 
-void LogPutc(char ch, void* extra) {
-    char str[] = {ch, '\0'};
-    flanterm_write(pFtCtx, str, sizeof(str));
-}
-
 void LogWrite(LogStatus status, char* pMsg, ...) {
     printf("[ ");
     
@@ -33,6 +28,6 @@ void LogWrite(LogStatus status, char* pMsg, ...) {
 
     va_list args;
     va_start(args, pMsg);
-    vfctprintf(LogPutc, NULL, pMsg, args);
+    vfctprintf(putc, NULL, pMsg, args);
     va_end(args);
 }

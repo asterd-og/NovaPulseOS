@@ -96,10 +96,22 @@ void putchar_(char ch) {
     flanterm_write(pFtCtx, str, sizeof(str));
 }
 
+void putc(char ch, void* extra) {
+    putchar_(ch);
+}
+
 void FtSetFg(uint32_t rgb) {
     pFtCtx->set_text_fg_rgb(pFtCtx, rgb);
 }
 
+void FtSetBg(uint32_t rgb) {
+    pFtCtx->set_text_bg_rgb(pFtCtx, rgb);
+}
+
 void FtResetFg() {
     pFtCtx->set_text_fg_default(pFtCtx);
+}
+
+void FtResetBg() {
+    pFtCtx->set_text_bg_default(pFtCtx);
 }

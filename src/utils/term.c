@@ -86,8 +86,14 @@ void TermUpdate() {
 }
 
 void CmdFetch(void) {
-    printf("\n |\\__/,|   (`\\  NovaPulseOS:\n");
-    printf(" |_ _  |.--.) )  - Free Physical Pages: %ld\n", PmGetFreePages());
+    printf("\n |\\__/,|   (`\\  ");
+    FtSetFg(cyan);
+    printf("NovaPulseOS:\n");
+    FtResetFg();
+    printf(" |_ _  |.--.) )  - Free Physical Pages: ");
+    FtSetFg(lightGreen);
+    printf("%ld\n", PmGetFreePages());
+    FtResetFg();
     printf(" ( T   )     /\n");
     printf("(((^_(((/(((_/\n\n");
 }

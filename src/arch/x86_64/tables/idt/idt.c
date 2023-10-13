@@ -1,6 +1,7 @@
 #include <arch/x86_64/tables/idt/idt.h>
 #include <arch/x86_64/cpu/serial.h>
 #include <arch/x86_64/cpu/pic.h>
+#include <utils/panic.h>
 
 __attribute__((aligned(0x10)))
 static IDTEntry s_idtEntries[256];
@@ -76,9 +77,7 @@ void IrqRegister(u8 vec, void* pHandler) {
 void IsrHandler(Registers* pRegs) {
     asm volatile("cli");
 
-    SeSend("Uh oh! something went wrong.\n");
-    SeSend(s_pMsg[pRegs->intNo]);
-    SeSend("\n");
+    Panic("\nUh oh!\nSomething went wrong: %s", s_pMsg[pRegs->intNo]);
 
     for (;;)asm volatile("hlt");
 }

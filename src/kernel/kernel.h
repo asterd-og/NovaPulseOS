@@ -17,6 +17,8 @@
 #define lightYellow  0xffff80
 #define white        0xffffff
 
+extern u64 keEnd;
+
 extern u64 hhdmOff;
 extern struct flanterm_context *pFtCtx;
 
@@ -26,3 +28,5 @@ extern volatile struct limine_hhdm_request hhdmReq;
 
 extern volatile struct limine_memmap_request mmapReq;
 extern struct limine_memmap_response* pMmapRes;
+
+void putc(char ch, void* extra);
