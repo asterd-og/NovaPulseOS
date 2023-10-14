@@ -11,6 +11,7 @@
 #include <utils/log.h>
 #include <drivers/ps2/kb.h>
 #include <utils/term.h>
+#include <utils/heap.h>
 
 u64 hhdmOff;
 
@@ -50,6 +51,10 @@ void KeStart(void) {
         hcf();
     }
 
+    GdtInit();
+
+    PmInit();
+
     pFtCtx = flanterm_fb_simple_init(
         fbReq.response->framebuffers[0]->address,
         fbReq.response->framebuffers[0]->width,
@@ -57,8 +62,8 @@ void KeStart(void) {
         fbReq.response->framebuffers[0]->pitch
     );
 
-    GdtInit();
     LogWrite(Good, "GDT Initialised.\n");
+    LogWrite(Good, "PMM Initialised.\n");
 
     asm volatile("cli");
 
@@ -73,14 +78,19 @@ void KeStart(void) {
     SeInit();
     LogWrite(Good, "Serial Initialised.\n");
 
-    PmInit();
-    LogWrite(Good, "PMM Initialised.\n");
-
     VmmInit();
     LogWrite(Good, "VMM Initialised.\n");
 
     KbInit();
     LogWrite(Good, "Keyboard Initialised.\n");
+
+    char* pStr = (char*)PmRequest(1) + hhdmOff;
+    memcpy(pStr, "hey!", 5);
+    printf("Allocated string: %s\n", pStr);
+    PmFree(pStr, 1);
+    //printf("Allocated string after free: %s\n", pStr);
+
+    asm ("int $0x0");
 
     TermInit();
 

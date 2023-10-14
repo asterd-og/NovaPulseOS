@@ -108,11 +108,11 @@ void* PmRequest(u8 num) {
     return (void*)(lastIdx * pageSize);
 }
 
-void PmFree(void* ptr, u8 num) {
-    size_t pageIdx = (u64)ptr / pageSize;
-    ptr = 0;
-    for (size_t i = 0; i < num; i++) {
-        bitClear(i + pageIdx);
+void PmFree(void* pPtr, u8 num) {
+    uptr pageIdx = (u64)pPtr;
+    pageIdx = (pageIdx) / pageSize;
+    for (int i = pageIdx; i < pageIdx + num; i++) {
+        bitClear(i);
     }
 }
 
