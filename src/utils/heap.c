@@ -4,7 +4,8 @@
 #include <kernel/kernel.h>
 
 void* HpAlloc(size_t size) {
-    if (size >= PmGetFreePages() * pageSize) {
+    if (size >= PmGetFreeMemory()) {
+        SeFSend("Size is greater than free memory %ld x %ld\n", size, PmGetFreeMemory());
         return -1;
     }
     Chunk* pChk;
@@ -20,7 +21,6 @@ void* HpAlloc(size_t size) {
 
 void HpFree(void* pPtr) {
     Chunk* chk = (Chunk*)(pPtr - sizeof(Chunk));
-    PmFree(pPtr - sizeof(Chunk), chk->pages);
-    pPtr = NULL;
+    PmFree((pPtr - sizeof(Chunk)) - hhdmOff, chk->pages);
     return;
 }

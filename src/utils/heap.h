@@ -12,3 +12,4 @@ typedef struct {
 void  HpInit();
 void* HpAlloc(size_t size);
 void  HpFree(void* pPtr);
+void  HpFTFree(void* pPtr, size_t size);

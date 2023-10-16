@@ -23,6 +23,8 @@ size_t  bitGet(size_t idx) {
     return pBitmap[idx / 8] & (1 << (idx % 8));
 }
 
+u64 freeMemory = 0;
+
 char* pMemType[] = {
     "LIMINE_MEMMAP_USABLE",
     "LIMINE_MEMMAP_RESERVED",
@@ -48,15 +50,16 @@ void PmInit() {
         }
     }
 
+    freeMemory = higherAddr;
     bitmapSize = alignUp((higherAddr / pageSize) / 8, pageSize);
 
     for (size_t j = 0; j < pMmapRes->entry_count; j++) {
         if (pMmapRes->entries[j]->type == memUsable) {
             if (pMmapRes->entries[j]->length >= bitmapSize) {
-                SeFSend("Found bitmap sized entry at 0x%lx\n", pMmapRes->entries[j]->base);
+                SeFSend("Found bitmap sized entry at 0x%lx virt: 0x%lx\n", pMmapRes->entries[j]->base, pMmapRes->entries[j]->base + hhdmOff);
                 pBitmap = pMmapRes->entries[j]->base + hhdmOff;
-                pMmapRes->entries[j]->length -= bitmapSize;
                 pMmapRes->entries[j]->base += bitmapSize;
+                pMmapRes->entries[j]->length -= bitmapSize;
                 break;
             }
         }
@@ -114,8 +117,13 @@ void PmFree(void* pPtr, u8 num) {
     for (int i = pageIdx; i < pageIdx + num; i++) {
         bitClear(i);
     }
+    memset(pPtr, 0, num * pageSize);
 }
 
 size_t PmGetFreePages() {
     return freePages;
+}
+
+u64 PmGetFreeMemory() {
+    return freeMemory;
 }

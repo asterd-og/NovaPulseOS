@@ -28,7 +28,8 @@ override INTERNALCPPFLAGS :=   \
 	-mno-3dnow                 \
 	-mno-sse2                  \
 	-mno-red-zone              \
-	-mcmodel=kernel
+	-mcmodel=kernel			   \
+	-Wno-conversion
 
 # Internal linker flags that should not be changed by the user.
 override INTERNALLDFLAGS :=    \

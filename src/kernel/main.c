@@ -84,14 +84,6 @@ void KeStart(void) {
     KbInit();
     LogWrite(Good, "Keyboard Initialised.\n");
 
-    char* pStr = (char*)PmRequest(1) + hhdmOff;
-    memcpy(pStr, "hey!", 5);
-    printf("Allocated string: %s\n", pStr);
-    PmFree(pStr, 1);
-    //printf("Allocated string after free: %s\n", pStr);
-
-    asm ("int $0x0");
-
     TermInit();
 
     while (1) {

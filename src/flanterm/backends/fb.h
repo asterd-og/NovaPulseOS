@@ -33,6 +33,7 @@ extern "C" {
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include <utils/heap.h>
 
 #include "../flanterm.h"
 
@@ -108,6 +109,8 @@ struct flanterm_fb_context {
     size_t old_cursor_y;
 };
 
+u64 FtGetAddrEnd();
+
 struct flanterm_context *flanterm_fb_init(
     void *(*_malloc)(size_t),
     void (*_free)(void *, size_t),
@@ -123,7 +126,6 @@ struct flanterm_context *flanterm_fb_init(
     size_t margin
 );
 
-#ifndef FLANTERM_FB_DISABLE_BUMP_ALLOC
 static inline struct flanterm_context *flanterm_fb_simple_init(
     uint32_t *framebuffer, size_t width, size_t height, size_t pitch
 ) {
@@ -142,7 +144,6 @@ static inline struct flanterm_context *flanterm_fb_simple_init(
         0
     );
 }
-#endif
 
 #ifdef __cplusplus
 }
