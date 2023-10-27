@@ -12,7 +12,6 @@ u32* pBackAddr;
 
 psf2Hdr* pFnt;
 u8* pFntStart;
-u16 fntPitch;
 
 int cx = 0;
 int cy = 0;
@@ -32,7 +31,6 @@ int FbInit(u64* pPsfAddr) {
 
     fbWidth = pFb->width;
     fbHeight = pFb->height;
-    fbPitch = pFb->pitch;
 
     for (size_t i = 0; i < pMmapRes->entry_count; i++) {
         if (pMmapRes->entries[i]->type == LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE || pMmapRes->entries[i]->type == LIMINE_MEMMAP_USABLE) {
