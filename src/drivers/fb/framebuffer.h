@@ -21,7 +21,13 @@ int FbInit();
 
 void FbSetPix(u32 x, u32 y, u32 color);
 
-void FbWriteChar(char c, u32 color);
+void FbDrawFillRect(u32 x, u32 y, u32 width, u32 height, u32 color);
+
+void FbWriteChar(char c, u32 color, u32 bg);
 
 void FbClear(u32 color);
 void FbUpdate();
+
+u64 FbGetCX();
+u64 FbGetCY();
+u64* FbGetFnt();

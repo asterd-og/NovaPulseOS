@@ -53,7 +53,8 @@ struct limine_file* findModule(int pos) {
     return modReq.response->modules[pos];
 }
 
-u32 color = 0xFFFFFFFF;
+u32 fg = 0xFFFFFFFF;
+u32 bg = 0x00000000;
 
 void KeStart(void) {
     hhdmOff = hhdmReq.response->offset;
@@ -95,23 +96,20 @@ void KeStart(void) {
     KbInit();
     LogWrite(Good, "Keyboard Initialised.\n");
 
+    asm ("int $0x0");
 
-    /*TermInit();
+    TermInit();
 
     while (1) {
         TermUpdate();
-    }*/
-
-    printf("Hello World!\n");
-
-    FbUpdate();
+        FbUpdate();
+    }
 
     hcf();
 }
 
 void putchar_(char ch) {
-    FbWriteChar(ch, color);
-    //flanterm_write(pFtCtx, str, sizeof(str));
+    FbWriteChar(ch, fg, bg);
 }
 
 void putc(char ch, void* extra) {
@@ -119,19 +117,17 @@ void putc(char ch, void* extra) {
 }
 
 void FtSetFg(uint32_t rgb) {
-    color = rgb;
-    //pFtCtx->set_text_fg_rgb(pFtCtx, rgb);
+    fg = rgb;
 }
 
 void FtSetBg(uint32_t rgb) {
-    //pFtCtx->set_text_bg_rgb(pFtCtx, rgb);
+    bg = rgb;
 }
 
 void FtResetFg() {
-    color = 0xFFFFFFFF;
-    //pFtCtx->set_text_fg_default(pFtCtx);
+    fg = white;
 }
 
 void FtResetBg() {
-    //pFtCtx->set_text_bg_default(pFtCtx);
+    bg = 0x00000000;
 }

@@ -56,19 +56,33 @@ void FbSetPix(u32 x, u32 y, u32 color) {
     pBackAddr[y * fbWidth + x] = color;
 }
 
-void FbWriteChar(char c, u32 color) {
+void FbDrawFillRect(u32 x, u32 y, u32 width, u32 height, u32 color) {
+    for (int yy = y; yy < y + height; yy++) {
+        for (int xx = x; xx < x + width; xx++) {
+            FbSetPix(xx, yy, color);
+        }
+    }
+}
+
+void FbWriteChar(char c, u32 fg, u32 bg) {
     if (c == '\n' || c == '\r') {
         cx = 0;
         cy += pFnt->height;
         return;
     }
 
+    if (c == '\b') {
+        cx -= pFnt->width;
+        return;
+    }
+
     u8* ch = pFntStart + c * pFnt->charSize;
+    FbDrawFillRect(cx, cy, pFnt->width, pFnt->height, bg);
 
     for (size_t yy = 0; yy < pFnt->height; yy++) {
         for (size_t xx = 0; xx < pFnt->width; xx++) {
             if ((ch[yy * fntPitch + xx / 8] >> (7 - xx % 8)) & 1) {
-                FbSetPix(cx + xx, cy + yy, color);
+                FbSetPix(cx + xx, cy + yy, fg);
             }
         }
     }
@@ -82,4 +96,16 @@ void FbClear(u32 color) {
 
 void FbUpdate() {
     for (int i = 0; i < fbWidth * fbHeight; i++) pFbAddr[i] = pBackAddr[i];
+}
+
+u64 FbGetCX() {
+    return cx;
+}
+
+u64 FbGetCY() {
+    return cy;
+}
+
+u64* FbGetFnt() {
+    return pFnt;
 }

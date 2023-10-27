@@ -6,10 +6,15 @@
 #include <libc/printf.h>
 #include <kernel/kernel.h>
 #include <arch/x86_64/mm/pfa.h>
+#include <drivers/fb/framebuffer.h>
 
 char buffer[512];
 int bufferIdx = 0;
 char c = '\0';
+
+u16 fntWidth;
+u16 fntHeight;
+psf2Hdr* _pFnt;
 
 typedef void(*funcHandlerPtr)(void);
 typedef struct {
@@ -49,7 +54,21 @@ void TermInput() {
     FtSetFg(white);
 }
 
+void TermCurErase() {
+    FbDrawFillRect(FbGetCX(), FbGetCY() + (fntHeight - 4), fntWidth, 4, 0x0);
+}
+
+void TermCurDraw() {
+    FbDrawFillRect(FbGetCX(), FbGetCY() + (fntHeight - 4), fntWidth, 4, white);
+}
+
 void TermInit() {
+    _pFnt = (psf2Hdr*)FbGetFnt();
+    fntWidth = _pFnt->width;
+    fntHeight = _pFnt->height;
+    
+    SeFSend("%d %d\n", fntWidth, fntHeight);
+
     printf("\nTerminal Initialised.\n\n");
 
     printf("   |\\---/|\n");
@@ -60,11 +79,13 @@ void TermInit() {
     printf("  (_,...'(_,.`__)/'.....+\n\n");
 
     TermInput();
+    TermCurDraw();
 }
 
 void TermUpdate() {
     c = KbGetChar();
     if (c != '\0') {
+        TermCurErase();
         if (c == '\n') {
             printf("\n");
             TermCmdHandler(buffer);
@@ -82,6 +103,7 @@ void TermUpdate() {
             bufferIdx++;
             printf("%c", c);
         }
+        TermCurDraw();
     }
 }
 

@@ -14,6 +14,8 @@ void Panic(char* pStr, ...) {
     vfctprintf(putc, NULL, pStr, args);
     va_end(args);
 
+    FbUpdate();
+
     FtResetFg();
     FtResetBg();
 }
