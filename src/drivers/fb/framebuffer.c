@@ -40,7 +40,6 @@ int FbInit(u64* pPsfAddr) {
                 pBackAddr = (u32*)(pMmapRes->entries[i]->base + hhdmOff);
                 pMmapRes->entries[i]->base += fbWidth * fbHeight * 4;
                 pMmapRes->entries[i]->length -= fbWidth * fbHeight * 4;
-                SeFSend("Found fb sized entry.\n");
                 break;
             }
         }
