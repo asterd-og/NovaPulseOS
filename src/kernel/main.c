@@ -96,8 +96,6 @@ void KeStart(void) {
     KbInit();
     LogWrite(Good, "Keyboard Initialised.\n");
 
-    asm ("int $0x0");
-
     TermInit();
 
     while (1) {
