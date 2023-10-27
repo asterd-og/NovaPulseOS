@@ -89,11 +89,11 @@ void CmdFetch(void) {
     printf("\n |\\__/,|   (`\\  ");
     FtSetFg(cyan);
     printf("NovaPulseOS:\n");
-    FtResetFg();
+    FtSetFg(white);
     printf(" |_ _  |.--.) )  - Free Physical Pages: ");
     FtSetFg(lightGreen);
     printf("%ld\n", PmGetFreePages());
-    FtResetFg();
+    FtSetFg(white);
     printf(" ( T   )     /\n");
     printf("(((^_(((/(((_/\n\n");
 }

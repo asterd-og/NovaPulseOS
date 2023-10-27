@@ -11,16 +11,16 @@ size_t bitmapSize;
 size_t lastIdx = 0;
 size_t freePages = 0;
 
-void bitClear(size_t idx) {
-    pBitmap[idx / 8] &= ~(1 << (idx % 8));
-}
-
 void bitSet(size_t idx) {
     pBitmap[idx / 8] |= (1 << (idx % 8));
 }
 
+void bitClear(size_t idx) {
+    pBitmap[idx / 8] &= ~(1 << (idx % 8));
+}
+
 size_t  bitGet(size_t idx) {
-    return pBitmap[idx / 8] & (1 << (idx % 8));
+    return (pBitmap[idx / 8] & (1 << (idx % 8)));
 }
 
 u64 freeMemory = 0;
@@ -57,7 +57,7 @@ void PmInit() {
         if (pMmapRes->entries[j]->type == memUsable) {
             if (pMmapRes->entries[j]->length >= bitmapSize) {
                 SeFSend("Found bitmap sized entry at 0x%lx virt: 0x%lx\n", pMmapRes->entries[j]->base, pMmapRes->entries[j]->base + hhdmOff);
-                pBitmap = pMmapRes->entries[j]->base + hhdmOff;
+                pBitmap = (u8*)(pMmapRes->entries[j]->base + hhdmOff);
                 pMmapRes->entries[j]->base += bitmapSize;
                 pMmapRes->entries[j]->length -= bitmapSize;
                 break;
@@ -69,7 +69,7 @@ void PmInit() {
 
     for (size_t k = 0; k < pMmapRes->entry_count; k++) {
         if (pMmapRes->entries[k]->type == memUsable) {
-            for (size_t l = 0; l < pMmapRes->entries[k]->length / pageSize; l++) {
+            for (size_t l = 0; l < pMmapRes->entries[k]->length; l += pageSize) {
                 freePages++;
                 bitClear((pMmapRes->entries[k]->base + l) / pageSize);
             }
@@ -77,12 +77,12 @@ void PmInit() {
     }
 }
 
-size_t PmFindFree(u8 num) {
+u64 PmFindFree(u64 num) {
     for (size_t i = 0; i < num;) {
-        if (lastIdx > (bitmapSize / 8)) {
+        if (lastIdx > bitmapSize) {
             if (freePages < num) {
                 return -1;
-            }
+            }   
             lastIdx = 0;
             return PmFindFree(num);
         } else if (bitGet(i + lastIdx) == 0) {
@@ -95,29 +95,29 @@ size_t PmFindFree(u8 num) {
     return lastIdx;
 }
 
-void* PmRequest(u8 num) {
-    if (freePages < num) {
-        SeFSend("PFA: No free pages\n");
+void* PmRequest(u64 num) {
+    u64 pageIdx = PmFindFree(num);
+
+    SeFSend("Found usable ones.\n");
+
+    if (pageIdx == -1) {
+        SeFSend("PFA: No free %ld pages only %ld\n", num, freePages);
         return -1;
     }
 
-    size_t pageIdx = PmFindFree(num);
-    freePages -= num;
-
-    for (size_t i = 0; i < num; i++) {
-        bitSet(i + lastIdx);
+    for (size_t i = pageIdx; i < pageIdx + num; i++) {
+        bitSet(i);
     }
 
-    return (void*)(lastIdx * pageSize);
+    return (void*)(pageIdx * pageSize);
 }
 
-void PmFree(void* pPtr, u8 num) {
+void PmFree(void* pPtr, u64 num) {
     uptr pageIdx = (u64)pPtr;
     pageIdx = (pageIdx) / pageSize;
     for (int i = pageIdx; i < pageIdx + num; i++) {
         bitClear(i);
     }
-    memset(pPtr, 0, num * pageSize);
 }
 
 size_t PmGetFreePages() {

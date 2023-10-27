@@ -4,12 +4,16 @@
 #include <kernel/kernel.h>
 
 void* HpAlloc(size_t size) {
+    //return (void*)PmRequest((size >= 4096 ? alignUp(size, pageSize) : 1)) + hhdmOff;
+    
     if (size >= PmGetFreeMemory()) {
         SeFSend("Size is greater than free memory %ld x %ld\n", size, PmGetFreeMemory());
         return -1;
     }
     Chunk* pChk;
     
+    SeFSend("Requesting %ld pages\n", (size >= 4096 ? alignUp(size, pageSize) : 1));
+
     u64* pPage = (u64*)(PmRequest((size >= 4096 ? alignUp(size, pageSize) : 1)) + hhdmOff);
     pChk = (Chunk*)pPage;
     

@@ -30,3 +30,6 @@ void VmmInit() {
 
     SeFSend("It worked\n");
 }
+
+void VmmMapPage(u64 virtAddr, u64 physAddr) {
+}

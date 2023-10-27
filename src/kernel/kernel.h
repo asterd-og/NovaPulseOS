@@ -23,6 +23,7 @@ extern u64 hhdmOff;
 extern struct flanterm_context *pFtCtx;
 
 extern volatile struct limine_framebuffer_request fbReq;
+extern struct limine_framebuffer_response* pFbRes;
 
 extern volatile struct limine_hhdm_request hhdmReq;
 

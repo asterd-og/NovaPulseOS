@@ -11,7 +11,7 @@
 #define pageSize 4096
 
 void   PmInit();
-void*  PmRequest(u8 size);
-void   PmFree(void* pAddr, u8 num);
+void*  PmRequest(u64 size);
+void   PmFree(void* pAddr, u64 num);
 size_t PmGetFreePages();
 u64    PmGetFreeMemory();

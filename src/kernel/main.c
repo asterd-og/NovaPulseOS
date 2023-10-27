@@ -12,6 +12,7 @@
 #include <drivers/ps2/kb.h>
 #include <utils/term.h>
 #include <utils/heap.h>
+#include <drivers/fb/framebuffer.h>
 
 u64 hhdmOff;
 
@@ -33,6 +34,7 @@ volatile struct limine_memmap_request mmapReq = {
 struct flanterm_context *pFtCtx;
 
 struct limine_memmap_response* pMmapRes;
+struct limine_framebuffer_response* pFbRes;
 
 // Halt and catch fire function.
 static void hcf(void) {
@@ -42,9 +44,21 @@ static void hcf(void) {
     }
 }
 
+static volatile struct limine_module_request modReq = {
+    .id = LIMINE_MODULE_REQUEST,
+    .revision = 0
+};
+
+struct limine_file* findModule(int pos) {
+    return modReq.response->modules[pos];
+}
+
+u32 color = 0xFFFFFFFF;
+
 void KeStart(void) {
     hhdmOff = hhdmReq.response->offset;
     pMmapRes = mmapReq.response;
+    pFbRes = fbReq.response;
     
     if (fbReq.response == NULL
      || fbReq.response->framebuffer_count < 1) {
@@ -53,14 +67,11 @@ void KeStart(void) {
 
     GdtInit();
 
-    PmInit();
+    if (FbInit(findModule(0)->address)) {
+        SeFSend("Could not load PSF2 font.\n");
+    }
 
-    pFtCtx = flanterm_fb_simple_init(
-        fbReq.response->framebuffers[0]->address,
-        fbReq.response->framebuffers[0]->width,
-        fbReq.response->framebuffers[0]->height,
-        fbReq.response->framebuffers[0]->pitch
-    );
+    PmInit();
 
     LogWrite(Good, "GDT Initialised.\n");
     LogWrite(Good, "PMM Initialised.\n");
@@ -84,18 +95,23 @@ void KeStart(void) {
     KbInit();
     LogWrite(Good, "Keyboard Initialised.\n");
 
-    TermInit();
+
+    /*TermInit();
 
     while (1) {
         TermUpdate();
-    }
+    }*/
+
+    printf("Hello World!\n");
+
+    FbUpdate();
 
     hcf();
 }
 
 void putchar_(char ch) {
-    char str[] = {ch, '\0'};
-    flanterm_write(pFtCtx, str, sizeof(str));
+    FbWriteChar(ch, color);
+    //flanterm_write(pFtCtx, str, sizeof(str));
 }
 
 void putc(char ch, void* extra) {
@@ -103,17 +119,19 @@ void putc(char ch, void* extra) {
 }
 
 void FtSetFg(uint32_t rgb) {
-    pFtCtx->set_text_fg_rgb(pFtCtx, rgb);
+    color = rgb;
+    //pFtCtx->set_text_fg_rgb(pFtCtx, rgb);
 }
 
 void FtSetBg(uint32_t rgb) {
-    pFtCtx->set_text_bg_rgb(pFtCtx, rgb);
+    //pFtCtx->set_text_bg_rgb(pFtCtx, rgb);
 }
 
 void FtResetFg() {
-    pFtCtx->set_text_fg_default(pFtCtx);
+    color = 0xFFFFFFFF;
+    //pFtCtx->set_text_fg_default(pFtCtx);
 }
 
 void FtResetBg() {
-    pFtCtx->set_text_bg_default(pFtCtx);
+    //pFtCtx->set_text_bg_default(pFtCtx);
 }
