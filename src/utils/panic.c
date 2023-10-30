@@ -2,6 +2,7 @@
 #include <libc/string.h>
 #include <libc/printf.h>
 #include <kernel/kernel.h>
+#include <drivers/fb/framebuffer.h>
 
 void Panic(char* pStr, ...) {
     FtSetFg(0);

@@ -1,11 +1,11 @@
-#pragma once
-
 #include <utils/term.h>
 #include <utils/log.h>
 #include <libc/string.h>
 #include <libc/printf.h>
 #include <kernel/kernel.h>
 #include <arch/x86_64/mm/pfa.h>
+#include <arch/x86_64/cpu/serial.h>
+#include <drivers/ps2/kb.h>
 #include <drivers/fb/framebuffer.h>
 
 char buffer[512];

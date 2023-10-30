@@ -12,7 +12,7 @@ typedef u64 pd;
 typedef u64 pt;
 typedef u64 page;
 
-pdp pml4[512];
+pdp* pPml4;
 
 volatile struct limine_kernel_address_request keAddrReq = {
     .id = LIMINE_KERNEL_ADDRESS_REQUEST,
@@ -23,12 +23,9 @@ u64 kePhysAddr;
 u64 keVirtAddr;
 
 void VmmInit() {
-    u64* pPml4 = &pml4;
     asm volatile("mov %%cr3, %0" : "=r"(pPml4) :: "memory");
 
     asm volatile("mov %0, %%cr3" :: "a" ((void*)pPml4));
-
-    SeFSend("It worked\n");
 }
 
 void VmmMapPage(u64 virtAddr, u64 physAddr) {

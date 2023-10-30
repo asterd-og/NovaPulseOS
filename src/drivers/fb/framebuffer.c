@@ -1,6 +1,7 @@
 #include <drivers/fb/framebuffer.h>
 #include <kernel/kernel.h>
 #include <utils/heap.h>
+#include <libc/string.h>
 
 u64 fbWidth;
 u64 fbHeight;
@@ -57,8 +58,8 @@ void FbSetPix(u32 x, u32 y, u32 color) {
 }
 
 void FbDrawFillRect(u32 x, u32 y, u32 width, u32 height, u32 color) {
-    for (int yy = y; yy < y + height; yy++) {
-        for (int xx = x; xx < x + width; xx++) {
+    for (u32 yy = y; yy < y + height; yy++) {
+        for (u32 xx = x; xx < x + width; xx++) {
             FbSetPix(xx, yy, color);
         }
     }
@@ -91,11 +92,11 @@ void FbWriteChar(char c, u32 fg, u32 bg) {
 }
 
 void FbClear(u32 color) {
-    for (int i = 0; i < fbWidth * fbHeight; i++) pBackAddr[i] = color;
+    for (u32 i = 0; i < fbWidth * fbHeight; i++) pBackAddr[i] = color;
 }
 
 void FbUpdate() {
-    for (int i = 0; i < fbWidth * fbHeight; i++) pFbAddr[i] = pBackAddr[i];
+    for (u32 i = 0; i < fbWidth * fbHeight; i++) pFbAddr[i] = pBackAddr[i];
 }
 
 u64 FbGetCX() {
@@ -107,5 +108,5 @@ u64 FbGetCY() {
 }
 
 u64* FbGetFnt() {
-    return pFnt;
+    return (u64*)pFnt;
 }

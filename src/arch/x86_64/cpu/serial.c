@@ -44,6 +44,6 @@ void SeWrap(char c, void* extra) {
 void SeFSend(char* pStr, ...) {
     va_list args;
     va_start(args, pStr);
-    const int ret = vfctprintf(SeWrap, NULL, pStr, args);
+    vfctprintf(SeWrap, NULL, pStr, args);
     va_end(args);
 }

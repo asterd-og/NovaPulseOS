@@ -1,6 +1,7 @@
 #include <arch/x86_64/mm/pfa.h>
 #include <arch/x86_64/cpu/serial.h>
 #include <kernel/kernel.h>
+#include <libc/string.h>
 
 #define memUsable 0
 #define memBLReclaimable 5
@@ -100,7 +101,7 @@ void* PmRequest(u64 num) {
 
     SeFSend("Found usable ones.\n");
 
-    if (pageIdx == -1) {
+    if (pageIdx == (u64)-1) {
         SeFSend("PFA: No free %ld pages only %ld\n", num, freePages);
         return -1;
     }
@@ -115,7 +116,7 @@ void* PmRequest(u64 num) {
 void PmFree(void* pPtr, u64 num) {
     uptr pageIdx = (u64)pPtr;
     pageIdx = (pageIdx) / pageSize;
-    for (int i = pageIdx; i < pageIdx + num; i++) {
+    for (u64 i = pageIdx; i < pageIdx + num; i++) {
         bitClear(i);
     }
 }

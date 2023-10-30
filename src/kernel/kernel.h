@@ -31,3 +31,8 @@ extern volatile struct limine_memmap_request mmapReq;
 extern struct limine_memmap_response* pMmapRes;
 
 void putc(char ch, void* extra);
+void putchar_(char ch);
+void FtSetFg(u32 rgb);
+void FtSetBg(u32 rgb);
+void FtResetFg();
+void FtResetBg();

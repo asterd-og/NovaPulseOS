@@ -2,6 +2,7 @@
 #include <arch/x86_64/mm/pfa.h>
 #include <libc/string.h>
 #include <kernel/kernel.h>
+#include <arch/x86_64/cpu/serial.h>
 
 void* HpAlloc(size_t size) {
     //return (void*)PmRequest((size >= 4096 ? alignUp(size, pageSize) : 1)) + hhdmOff;

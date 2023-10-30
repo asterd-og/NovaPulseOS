@@ -13,6 +13,7 @@
 #include <utils/term.h>
 #include <utils/heap.h>
 #include <drivers/fb/framebuffer.h>
+#include <arch/x86_64/cpu/pic.h>
 
 u64 hhdmOff;
 
@@ -114,11 +115,11 @@ void putc(char ch, void* extra) {
     putchar_(ch);
 }
 
-void FtSetFg(uint32_t rgb) {
+void FtSetFg(u32 rgb) {
     fg = rgb;
 }
 
-void FtSetBg(uint32_t rgb) {
+void FtSetBg(u32 rgb) {
     bg = rgb;
 }
 
