@@ -1,3 +1,5 @@
+THIS PROJECT WAS HALTED, NEW ONE [HERE](https://github.com/asterd-og/QuasarOS)
+
 # Introduction
 NovaPulseOS Is a 64-bit operating system, based on the x86 architecture.
 
